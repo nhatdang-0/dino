@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dino - Nhật Đăng</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: sans-serif;
+      background: #f4f4f4;
+      overflow: hidden;
+    }
+
+    canvas {
+      background: #fff;
+      display: block;
+      margin: 0 auto;
+      border: 2px solid #333;
+    }
+
+    #gameOver {
+      position: absolute;
+      top: 40%;
+      width: 100%;
+      text-align: center;
+      font-size: 36px;
+      color: red;
+      display: none;
+    }
+
+    #restartBtn {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      padding: 10px 20px;
+      font-size: 20px;
+      display: none;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div id="gameOver">Game Over</div>
+  <button id="restartBtn" onclick="restartGame()">Chơi lại</button>
+  <canvas id="gameCanvas" width="800" height="200"></canvas>
+
+  <script>
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+
+    let dino = { x: 50, y: 150, width: 40, height: 40, vy: 0, gravity: 1.5, jumping: false };
+    let cactus = { x: 800, y: 160, width: 20, height: 40, speed: 6 };
+    let score = 0;
+    let gameRunning = true;
+
+    function drawDino() {
+      ctx.fillStyle = "green";
+      ctx.fillRect(dino.x, dino.y, dino.width, dino.height);
+    }
+
+    function drawCactus() {
+      ctx.fillStyle = "brown";
+      ctx.fillRect(cactus.x, cactus.y, cactus.width, cactus.height);
+    }
+
+    function drawScore() {
+      ctx.fillStyle = "black";
+      ctx.font = "20px Arial";
+      ctx.fillText("Điểm: " + score, 10, 30);
+    }
+
+    function checkCollision() {
+      if (
+        dino.x < cactus.x + cactus.width &&
+        dino.x + dino.width > cactus.x &&
+        dino.y < cactus.y + cactus.height &&
+        dino.y + dino.height > cactus.y
+      ) {
+        gameOver();
+      }
+    }
+
+    function gameOver() {
+      gameRunning = false;
+      document.getElementById("gameOver").style.display = "block";
+      document.getElementById("restartBtn").style.display = "block";
+    }
+
+    function restartGame() {
+      dino.y = 150;
+      dino.vy = 0;
+      cactus.x = 800;
+      score = 0;
+      gameRunning = true;
+      document.getElementById("gameOver").style.display = "none";
+      document.getElementById("restartBtn").style.display = "none";
+      requestAnimationFrame(update);
+    }
+
+    function update() {
+      if (!gameRunning) return;
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Update Dino
+      if (dino.jumping) {
+        dino.vy += dino.gravity;
+        dino.y += dino.vy;
+
+        if (dino.y >= 150) {
+          dino.y = 150;
+          dino.vy = 0;
+          dino.jumping = false;
+        }
+      }
+
+      // Update Cactus
+      cactus.x -= cactus.speed;
+      if (cactus.x < -cactus.width) {
+        cactus.x = canvas.width + Math.random() * 300;
+        score++;
+      }
+
+      drawDino();
+      drawCactus();
+      drawScore();
+      checkCollision();
+
+      requestAnimationFrame(update);
+    }
+
+    document.addEventListener("keydown", function (e) {
+      if (e.code === "Space" && !dino.jumping && gameRunning) {
+        dino.vy = -20;
+        dino.jumping = true;
+      }
+    });
+
+    update();
+  </script>
+</body>
+</html>
